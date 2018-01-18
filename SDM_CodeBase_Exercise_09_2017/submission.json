@@ -1,0 +1,15 @@
+[
+  {
+    "name": "SDM_Exercise09",
+    "params": {
+      "source_files": ["src/de/tuda/sdm/dmdb/sql/operator/exercise/Send.java", "src/de/tuda/sdm/dmdb/sql/operator/exercise/Receive.java", "src/de/tuda/sdm/dmdb/sql/operator/exercise/HashJoin.java"],
+      "java_files": ["Send.java", "Receive.java", "HashJoin.java"],
+      "junit_test_fqns": ["de.tuda.sdm.dmdb.test.sql.TestSuiteSQL"],
+      "testing_jar": "SDM_Exercise_09.jar:SDM_Exercise_09_commonBase.jar",
+      "junit_jar_path": "./junit-4.12.jar",
+      "hamcrest_jar_path": "./hamcrest-core-1.3.jar",
+      "java_path": "/usr/bin/java",
+      "javac_path": "/usr/bin/javac"
+    }
+  }
+]
