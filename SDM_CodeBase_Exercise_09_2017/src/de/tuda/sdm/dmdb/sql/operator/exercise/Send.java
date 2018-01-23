@@ -87,7 +87,7 @@ public class Send extends SendBase {
 		do {
 			rec = child.next();
 			if (rec != null) {
-				int id = ((SQLInteger) rec.getValue(partitionColumn)).getValue() % hashFunction; // nodeId of peer to send
+				int id = getNodeIdForRecord(rec, partitionColumn);
 				if (id == (nodeId % hashFunction)) { // store locally
 					resultList.add(rec);
 				} else { // send to a peer
@@ -95,9 +95,7 @@ public class Send extends SendBase {
 					connectionMap.get(id).sendRecord(rec);
 				}
 			} else {
-				for (Map.Entry<Integer, TCPClient> entry : connectionMap.entrySet()) {
-					entry.getValue().close();
-				}
+				closeConnectionsToPeers();
 			}
 		} while (rec != null);
 		return resultList.remove();
