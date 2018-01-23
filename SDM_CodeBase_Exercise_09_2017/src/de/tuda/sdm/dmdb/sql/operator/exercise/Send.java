@@ -102,6 +102,10 @@ public class Send extends SendBase {
 					TCPClient peer = socketMap.get(id);
 					peer.sendRecord(rec);
 				}
+			} else {
+				for (Map.Entry<Integer, TCPClient> entry : socketMap.entrySet()) {
+					entry.getValue().close();
+				}
 			}
 		} while (rec != null);
 		return resultList.remove();
@@ -112,7 +116,6 @@ public class Send extends SendBase {
 		// TODO: implement this method
 		// reverse what was done in open() - hint there is a helper method that you can
 		// use
-
 		child.close();
 	}
 
