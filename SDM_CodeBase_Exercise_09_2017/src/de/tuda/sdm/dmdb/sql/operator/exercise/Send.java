@@ -43,12 +43,6 @@ public class Send extends SendBase {
 		super(child, nodeId, nodeMap, partitionColumn);
 	}
 
-	Map<Integer, TCPClient> socketMap;
-	
-	Map<Integer, TCPClient> get_socketMap_from_Send(){
-		return socketMap;
-	}
-	
 	@Override
 	public void open() {
 		// TODO: implement this method
@@ -57,7 +51,7 @@ public class Send extends SendBase {
 		// create a client socket for all peer nodes using information in nodeMap
 		// store client socket in map for later use
 
-		socketMap = new HashMap<Integer, TCPClient>();
+		connectionMap = new HashMap<Integer, TCPClient>();
 
 		for (Map.Entry<Integer, String> entry : nodeMap.entrySet()) {
 			if (entry.getKey() != nodeId) {
@@ -66,7 +60,7 @@ public class Send extends SendBase {
 				int port = Integer.valueOf(address.substring(address.indexOf(":")));
 
 				try {
-					socketMap.put(entry.getKey(), new TCPClient(hostname, port));
+					connectionMap.put(entry.getKey(), new TCPClient(hostname, port));
 
 				} catch (UnknownHostException e) {
 					// TODO Auto-generated catch block
@@ -87,23 +81,21 @@ public class Send extends SendBase {
 		// to peer
 
 		// reached end, close connections to peers
-		int n = nodeMap.size();
-		
 		AbstractRecord rec;
 		Queue<AbstractRecord> resultList =  new LinkedList<AbstractRecord>();
 		
 		do {
 			rec = child.next();
 			if (rec != null) {
-				int id = ((SQLInteger) rec.getValue(partitionColumn)).getValue() % n; // nodeId of peer to send
-				if (id == (nodeId % n)) { // store locally
+				int id = ((SQLInteger) rec.getValue(partitionColumn)).getValue() % hashFunction; // nodeId of peer to send
+				if (id == (nodeId % hashFunction)) { // store locally
 					resultList.add(rec);
 				} else { // send to a peer
-					TCPClient peer = socketMap.get(id);
+					TCPClient peer = connectionMap.get(id);
 					peer.sendRecord(rec);
 				}
 			} else {
-				for (Map.Entry<Integer, TCPClient> entry : socketMap.entrySet()) {
+				for (Map.Entry<Integer, TCPClient> entry : connectionMap.entrySet()) {
 					entry.getValue().close();
 				}
 			}
