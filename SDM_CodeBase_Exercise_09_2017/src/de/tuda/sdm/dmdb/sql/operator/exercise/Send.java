@@ -91,8 +91,8 @@ public class Send extends SendBase {
 				if (id == (nodeId % hashFunction)) { // store locally
 					resultList.add(rec);
 				} else { // send to a peer
-					TCPClient peer = connectionMap.get(id);
-					peer.sendRecord(rec);
+//					TCPClient peer = connectionMap.get(id);
+					connectionMap.get(id).sendRecord(rec);
 				}
 			} else {
 				for (Map.Entry<Integer, TCPClient> entry : connectionMap.entrySet()) {
