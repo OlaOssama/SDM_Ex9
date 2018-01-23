@@ -57,7 +57,7 @@ public class Send extends SendBase {
 			if (entry.getKey() != nodeId) {
 				String address = nodeMap.get(nodeId);
 				String hostname = address.substring(0, address.indexOf(":"));
-				int port = Integer.valueOf(address.substring(address.indexOf(":")));
+				int port = Integer.valueOf(address.substring(address.indexOf(":")+1));
 
 				try {
 					connectionMap.put(entry.getKey(), new TCPClient(hostname, port));
