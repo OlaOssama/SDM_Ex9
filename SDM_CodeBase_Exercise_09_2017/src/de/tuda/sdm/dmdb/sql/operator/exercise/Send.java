@@ -45,6 +45,10 @@ public class Send extends SendBase {
 
 	Map<Integer, TCPClient> socketMap;
 	
+	Map<Integer, TCPClient> get_socketMap_from_Send(){
+		return socketMap;
+	}
+	
 	@Override
 	public void open() {
 		// TODO: implement this method
