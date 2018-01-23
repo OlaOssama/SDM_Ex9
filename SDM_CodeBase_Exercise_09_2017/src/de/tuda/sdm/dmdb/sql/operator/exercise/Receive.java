@@ -42,14 +42,15 @@ public class Receive extends ReceiveBase {
 		// account where applicable!
 
 		// init local cache
-
 		// Attention: call open on child after starting receive server, so that
 		// sendOperator can connect
 
-		Queue<AbstractRecord> localCache = null;
-		AtomicInteger finishedPeers = new AtomicInteger(numPeers-1);
+		//finishedPeers= new AtomicInteger(numPeers-1);
+		
 		try {
-			TCPServer self = new TCPServer(listenerPort,localCache,finishedPeers);
+			receiveServer = new TCPServer(listenerPort,localCache,finishedPeers);
+			receiveServer.run();
+			child.open();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -58,6 +59,13 @@ public class Receive extends ReceiveBase {
 
 	@Override
 	public AbstractRecord next() {
+		receiveServer.run();
+		if(this.finishedPeers.get() == numPeers){
+			return null;
+		}
+		else{
+		return localCache.remove();
+		}
 		// TODO: implement this method
 		// HINT: local cache must be passed to TCPServer
 		// and will be accessed by multiple Handler-Threads - take multi-threading into
@@ -66,13 +74,13 @@ public class Receive extends ReceiveBase {
 
 		// check if we finished processing of all records - hint: you can use
 		// this.finishedPeers
-
-		return null;
 	}
 
 	@Override
 	public void close() {
 		// TODO: implement this method
+		child.close();
+		receiveServer.stopServer();
 		// reverse what was done in open()
 	}
 
