@@ -57,7 +57,7 @@ public class Send extends SendBase {
 			if (entry.getKey() != nodeId) {
 				String address = nodeMap.get(nodeId);
 				String hostname = address.substring(0, address.indexOf(":"));
-				int port = Integer.valueOf(address.substring(address.indexOf(":")+1));
+				int port = Integer.valueOf(address.substring(address.indexOf(":") + 1));
 
 				try {
 					connectionMap.put(entry.getKey(), new TCPClient(hostname, port));
@@ -82,23 +82,21 @@ public class Send extends SendBase {
 
 		// reached end, close connections to peers
 		AbstractRecord rec;
-		Queue<AbstractRecord> resultList =  new LinkedList<AbstractRecord>();
-		
+
 		do {
 			rec = child.next();
 			if (rec != null) {
 				int id = getNodeIdForRecord(rec, partitionColumn);
-				if (id == (nodeId % hashFunction)) { // store locally
-					resultList.add(rec);
+				if (id == (nodeId % hashFunction)) {
+					return rec;
 				} else { // send to a peer
-//					TCPClient peer = connectionMap.get(id);
 					connectionMap.get(id).sendRecord(rec);
 				}
 			} else {
 				closeConnectionsToPeers();
+				return null;
 			}
-		} while (rec != null);
-		return resultList.remove();
+		} while (true);
 	}
 
 	@Override
