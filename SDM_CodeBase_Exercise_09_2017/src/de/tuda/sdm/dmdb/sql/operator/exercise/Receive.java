@@ -1,6 +1,7 @@
 package de.tuda.sdm.dmdb.sql.operator.exercise;
 
 import java.io.IOException;
+import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -36,6 +37,7 @@ public class Receive extends ReceiveBase {
 
 	@Override
 	public void open() {
+		localCache =  new LinkedList<AbstractRecord>();
 		// TODO: implement this method
 		// HINT: local cache must be passed to TCPServer
 		// and will be accessed by multiple Handler-Threads - take
@@ -48,7 +50,10 @@ public class Receive extends ReceiveBase {
 
 		try {
 			receiveServer = new TCPServer(listenerPort, localCache, finishedPeers);
-			receiveServer.run();
+			System.out.println("aefsdfesf");
+			//receiveServer.run();
+			
+			//System.out.println("aefsdfesf");
 			child.open();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

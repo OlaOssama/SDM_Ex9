@@ -47,6 +47,7 @@ public class Send extends SendBase {
 	public void open() {
 		// TODO: implement this method
 		// init child
+		System.out.println("adadaw");
 		child.open();
 		// create a client socket for all peer nodes using information in nodeMap
 		// store client socket in map for later use
@@ -61,7 +62,7 @@ public class Send extends SendBase {
 
 				try {
 					connectionMap.put(entry.getKey(), new TCPClient(hostname, port));
-
+					System.out.println("dsfsdfds"+connectionMap);
 				} catch (UnknownHostException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
