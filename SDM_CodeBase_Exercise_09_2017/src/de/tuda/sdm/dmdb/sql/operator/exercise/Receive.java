@@ -21,8 +21,7 @@ public class Receive extends ReceiveBase {
 	 * Constructor of Receive
 	 * 
 	 * @param child
-	 *            - Child operator used to process next calls, usually
-	 *            SendOperator
+	 *            - Child operator used to process next calls, usually SendOperator
 	 * @param numPeers
 	 *            - Number of peer nodes that have to finish processing before
 	 *            operator finishes
@@ -47,10 +46,9 @@ public class Receive extends ReceiveBase {
 		// Attention: call open on child after starting receive server, so that
 		// sendOperator can connect
 
-		// finishedPeers= new AtomicInteger(numPeers-1);
-		
 		try {
 			receiveServer = new TCPServer(listenerPort, localCache, finishedPeers);
+			receiveServer.run();
 			child.open();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -60,14 +58,6 @@ public class Receive extends ReceiveBase {
 
 	@Override
 	public AbstractRecord next() {
-		System.out.println("Before server: " + receiveServer.getActiveConnectionsCount());
-		receiveServer.run();
-		System.out.println("After server: " + receiveServer.getActiveConnectionsCount());
-		if (this.finishedPeers.get() == numPeers) {// receiveServer.getActiveConnectionsCount()
-			return null;
-		} else {
-			return localCache.remove();
-		}
 		// TODO: implement this method
 		// HINT: local cache must be passed to TCPServer
 		// and will be accessed by multiple Handler-Threads - take
@@ -77,6 +67,18 @@ public class Receive extends ReceiveBase {
 
 		// check if we finished processing of all records - hint: you can use
 		// this.finishedPeers
+
+		do {
+			AbstractRecord rec;
+			do {
+				rec = child.next();
+				if (rec != null) {
+					return rec;
+				} else if (this.finishedPeers.get() == numPeers) {// receiveServer.getActiveConnectionsCount()
+					return null;
+				}
+			} while (rec == null);
+		} while (true);
 	}
 
 	@Override
