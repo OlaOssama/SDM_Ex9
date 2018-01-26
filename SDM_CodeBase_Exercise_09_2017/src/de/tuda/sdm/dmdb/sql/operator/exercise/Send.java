@@ -47,7 +47,7 @@ public class Send extends SendBase {
 	public void open() {
 		// TODO: implement this method
 		// init child
-		System.out.println("adadaw");
+		System.out.println("Send " + nodeId + " open");
 		child.open();
 		// create a client socket for all peer nodes using information in nodeMap
 		// store client socket in map for later use
@@ -62,7 +62,6 @@ public class Send extends SendBase {
 
 				try {
 					connectionMap.put(entry.getKey(), new TCPClient(hostname, port));
-					System.out.println("dsfsdfds"+connectionMap);
 				} catch (UnknownHostException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -72,18 +71,16 @@ public class Send extends SendBase {
 				}
 			}
 		}
-
 	}
+	
 
 	@Override
 	public AbstractRecord next() {
 		// TODO: implement this method
 		// retrieve next from child and determine whether to keep record local or send
 		// to peer
-
 		// reached end, close connections to peers
 		AbstractRecord rec;
-
 		do {
 			rec = child.next();
 			if (rec != null) {
@@ -93,7 +90,7 @@ public class Send extends SendBase {
 				} else { // send to a peer
 					connectionMap.get(id).sendRecord(rec);
 				}
-			} else {
+			} else { // reach end
 				closeConnectionsToPeers();
 				return null;
 			}

@@ -37,7 +37,7 @@ public class Receive extends ReceiveBase {
 
 	@Override
 	public void open() {
-		localCache =  new LinkedList<AbstractRecord>();
+		System.out.println("Receive " + nodeId + " open");
 		// TODO: implement this method
 		// HINT: local cache must be passed to TCPServer
 		// and will be accessed by multiple Handler-Threads - take
@@ -49,17 +49,17 @@ public class Receive extends ReceiveBase {
 		// sendOperator can connect
 
 		try {
+			localCache = new LinkedList<AbstractRecord>();
 			receiveServer = new TCPServer(listenerPort, localCache, finishedPeers);
-			System.out.println("aefsdfesf");
-			//receiveServer.run();
-			
-			//System.out.println("aefsdfesf");
 			child.open();
+//			receiveServer.run();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
+	
+	static boolean runServerFlag = false;
 
 	@Override
 	public AbstractRecord next() {
@@ -72,25 +72,27 @@ public class Receive extends ReceiveBase {
 
 		// check if we finished processing of all records - hint: you can use
 		// this.finishedPeers
-
-		do {
-			AbstractRecord rec;
-			do {
-				rec = child.next();
-				if (rec != null) {
-					return rec;
-				} else if (this.finishedPeers.get() == numPeers) {// receiveServer.getActiveConnectionsCount()
-					return null;
-				}
-			} while (rec == null);
-		} while (true);
+		AbstractRecord rec = child.next();
+		if (rec != null) { // receive from child
+			return rec;
+		} else { // receive from peer
+			if (!runServerFlag) {
+				System.out.println("receive "+nodeId + " run server");
+				receiveServer.run(); // TODO: program blocked right after call this! -> fix it!
+			}
+//			System.out.println("aa");
+			while (localCache.isEmpty()); // waiting for local cache to be filled
+//			System.out.println("bb");
+			return localCache.remove();
+		}
 	}
 
 	@Override
 	public void close() {
+		System.out.println("Receive " + nodeId + " close");
 		// TODO: implement this method
-		child.close();
 		receiveServer.stopServer();
+		child.close();
 		// reverse what was done in open()
 	}
 
