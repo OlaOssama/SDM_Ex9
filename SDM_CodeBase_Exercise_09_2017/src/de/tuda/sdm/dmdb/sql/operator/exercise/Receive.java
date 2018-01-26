@@ -52,14 +52,17 @@ public class Receive extends ReceiveBase {
 			localCache = new LinkedList<AbstractRecord>();
 			receiveServer = new TCPServer(listenerPort, localCache, finishedPeers);
 			child.open();
-//			receiveServer.run();
+			receiveServer.start();
+			// receiveServer.join();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		// catch (InterruptedException e) {
+		// // TODO Auto-generated catch block
+		// e.printStackTrace();
+		// }
 	}
-	
-	static boolean runServerFlag = false;
 
 	@Override
 	public AbstractRecord next() {
@@ -72,18 +75,21 @@ public class Receive extends ReceiveBase {
 
 		// check if we finished processing of all records - hint: you can use
 		// this.finishedPeers
+
 		AbstractRecord rec = child.next();
 		if (rec != null) { // receive from child
 			return rec;
 		} else { // receive from peer
-			if (!runServerFlag) {
-				System.out.println("receive "+nodeId + " run server");
-				receiveServer.run(); // TODO: program blocked right after call this! -> fix it!
+			if (receiveServer.getActiveConnectionsCount() > 0) {
+				while (localCache.isEmpty()) {
+//					System.out.println("receive " + nodeId + " waiting");
+				}
+				rec = localCache.remove();
+				return rec;
 			}
-//			System.out.println("aa");
-			while (localCache.isEmpty()); // waiting for local cache to be filled
-//			System.out.println("bb");
-			return localCache.remove();
+			 System.out.println("receive " + nodeId + " no more active connection");
+			// System.out.println("empty localcache size: " + localCache.size());
+			 return null;
 		}
 	}
 

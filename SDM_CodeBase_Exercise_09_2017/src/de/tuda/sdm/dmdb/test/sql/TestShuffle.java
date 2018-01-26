@@ -62,6 +62,7 @@ public class TestShuffle extends TestCase{
 
 		Runnable task1 = () -> {
 			TableScan tableScan = new TableScan(htable1);
+			// receive operator listening on port 8000
 			Shuffle shuffleOperator = new Shuffle(tableScan, nodeId, nodeMap, port, partitionColumn);
 			shuffleOperator.open();
 			AbstractRecord next;
@@ -73,6 +74,7 @@ public class TestShuffle extends TestCase{
 
 		Runnable task2 = () -> {
 			TableScan tableScan = new TableScan(htable2);
+			// receive operator listening on port 8001
 			Shuffle shuffleOperator = new Shuffle(tableScan, nodeId+1, nodeMap, port+1, partitionColumn);
 			shuffleOperator.open();
 			AbstractRecord next;

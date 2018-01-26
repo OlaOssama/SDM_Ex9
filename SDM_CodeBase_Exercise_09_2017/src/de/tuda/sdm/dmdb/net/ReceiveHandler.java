@@ -72,7 +72,7 @@ public class ReceiveHandler {
 			boolean lock = !(localCache.getClass().getPackage().getName().equals("java.util.concurrent"));
 			boolean result = false;
 			while ((input = (AbstractRecord) in.readObject()) != null) {
-				System.out.println("Handler " + localSocketAddress + ": Received new Object: " + input);
+//				System.out.println("Handler " + localSocketAddress + ": Received new Object: " + input);
 
 				if (lock) {
 					// local cache not thread-safe, lock it
@@ -86,7 +86,7 @@ public class ReceiveHandler {
 				if (!result) {
 					System.err.println("Handler " + localSocketAddress + ": Could not add object to localCache!");
 				}else {
-					System.out.println("Handler " + localSocketAddress + ": Added object to local cache");
+//					System.out.println("Handler " + localSocketAddress + ": Added object to local cache");
 				}
 			}
 
