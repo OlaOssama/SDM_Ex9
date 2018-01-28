@@ -110,13 +110,18 @@ public class Receive extends ReceiveBase {
 		AbstractRecord rec = null;
 		while (localCache.isEmpty() && finishedPeers.get() < numPeers) {
 		}
-		// if (finishedPeers.get() == numPeers)
-		// try {
-		// Thread.sleep(100);
-		// } catch (InterruptedException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
+
+		//TODO: how to know that peers are finished sending?
+		// eliminate this workaround
+		if (finishedPeers.get() == numPeers) { // workaround the case when finishedPeers = numPeers, but receiver does
+												// not yet complete receiving some Records on fly
+			try {
+				Thread.sleep(100);	// hope that after a while some records appear in the localCache
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 		rec = localCache.poll();
 		return rec;
 	}
