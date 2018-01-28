@@ -56,7 +56,7 @@ public class Send extends SendBase {
 
 		for (Map.Entry<Integer, String> entry : nodeMap.entrySet()) {
 			if (entry.getKey() != nodeId) {
-				String address = nodeMap.get(nodeId);
+				String address = entry.getValue();
 				String hostname = address.substring(0, address.indexOf(":"));
 				int port = Integer.valueOf(address.substring(address.indexOf(":") + 1));
 				try {
@@ -70,22 +70,8 @@ public class Send extends SendBase {
 				}
 			}
 		}
-		
-//		System.out.println("Send " + nodeId + " open nodeMap");
-//		for (Map.Entry<Integer, String> entry : nodeMap.entrySet()) {
-//			System.out.println("Key: " + entry.getKey() + " val: " + entry.getValue());
-//		}
-//		
-//		System.out.println("Send " + nodeId + " open connMap size = " + connectionMap.size());
-//		for (Map.Entry<Integer, TCPClient> entry : connectionMap.entrySet()) {
-//			System.out.println("Key: " + entry.getKey() + " val: " + entry.getValue().toString());
-//		}
 	}
 	
-	int countLocal = 0;
-	
-	int countPeer = 0;
-
 	@Override
 	public AbstractRecord next() {
 		// TODO: implement this method
@@ -98,15 +84,13 @@ public class Send extends SendBase {
 			if (rec != null) {
 				int id = getNodeIdForRecord(rec, partitionColumn);
 				if (id == (nodeId % hashFunction)) {
-					++countLocal;
 					return rec;
 				} else { // send to a peer
-					++countPeer;
 					connectionMap.get(id).sendRecord(rec);
 				}
 			} else { // reach end
 				closeConnectionsToPeers();
-				return null;
+				return null;	// only send null when complete
 			}
 		} while (true);
 	}
@@ -116,7 +100,7 @@ public class Send extends SendBase {
 		// TODO: implement this method
 		// reverse what was done in open() - hint there is a helper method that you can
 		// use
-		System.out.println("send id close " + nodeId + " countLocal = " + countLocal + " countPeer = "+ countPeer);
+		System.out.println("send id close ");
 		child.close();
 	}
 

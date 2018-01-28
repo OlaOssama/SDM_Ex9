@@ -91,6 +91,8 @@ public class TestShuffle extends TestCase{
 
 		System.out.println("Record list1: " + resultList);
 		System.out.println("Record list2: " + resultList2);
+		System.out.println("list 1: "+ resultList.size());
+		System.out.println("list 2: "+ resultList2.size());
 		Assert.assertTrue(resultList.size() == numRecords / 2);
 		Assert.assertTrue(resultList2.size() == numRecords / 2);
 		for (AbstractRecord abstractRecord : resultList) {

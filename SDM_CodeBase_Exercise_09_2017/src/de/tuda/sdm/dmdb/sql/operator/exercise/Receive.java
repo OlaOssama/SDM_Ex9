@@ -60,6 +60,7 @@ public class Receive extends ReceiveBase {
 
 		try {
 			localCache = new LinkedList<AbstractRecord>();
+			System.out.println("Receive id " + nodeId + " listen: " + listenerPort);
 			receiveServer = new TCPServer(listenerPort, localCache, finishedPeers);
 			t1 = new Thread(receiveServer);
 			t1.start();
@@ -70,7 +71,10 @@ public class Receive extends ReceiveBase {
 				AbstractRecord rec;
 				do {
 					rec = child.next();
-					localCache.add(rec);
+					if (rec != null) { // localCache only has elements != null
+						boolean res = localCache.offer(rec);
+						if (!res) System.out.println("Adding to queue NOT ok");
+					}
 				} while (rec != null);
 			};
 
@@ -93,11 +97,10 @@ public class Receive extends ReceiveBase {
 
 		// check if we finished processing of all records - hint: you can use
 		// this.finishedPeers
-		
+
 		AbstractRecord rec = null;
-		while (localCache.isEmpty()) {
-			if (finishedPeers.get() == numPeers)
-				break;
+		while (localCache.isEmpty() && finishedPeers.get() < numPeers) {
+//			System.out.println(".");
 		}
 		if (localCache.isEmpty())
 			return null;
@@ -107,9 +110,6 @@ public class Receive extends ReceiveBase {
 
 	@Override
 	public void close() {
-		System.out.println("Receive " + nodeId + " close");
-		// TODO: implement this method
-		
 		receiveServer.stopServer();
 		try {
 			t1.join();
@@ -119,6 +119,7 @@ public class Receive extends ReceiveBase {
 			e.printStackTrace();
 		}
 		child.close();
+		System.out.println("Receive " + nodeId + " close");
 		// reverse what was done in open()
 	}
 

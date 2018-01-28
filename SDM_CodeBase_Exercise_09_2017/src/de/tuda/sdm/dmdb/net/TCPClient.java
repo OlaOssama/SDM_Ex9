@@ -67,7 +67,7 @@ public class TCPClient {
 	 * @return - Returns true on success, else false
 	 */
 	public boolean sendRecord(AbstractRecord record) {
-		System.out.println("TCPClient: sending record to server");
+//		System.out.println("TCPClient: sending record to server");
 		try {
 			this.objectOutputStream.writeObject(record);
 		}catch (SocketException e) {
@@ -79,7 +79,7 @@ public class TCPClient {
 			e.printStackTrace();
 			return false;
 		}
-		System.out.println("TCPClient: Finished sending to server");
+//		System.out.println("TCPClient: Finished sending to server");
 		return true;
 
 	}
