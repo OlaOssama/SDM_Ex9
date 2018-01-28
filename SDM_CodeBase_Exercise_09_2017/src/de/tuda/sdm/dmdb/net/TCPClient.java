@@ -7,8 +7,6 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
-import javax.net.ssl.HostnameVerifier;
-
 import de.tuda.sdm.dmdb.storage.AbstractRecord;
 
 /**
@@ -23,9 +21,7 @@ public class TCPClient {
 
 	protected Socket socket = null; // The client socket
 	protected ObjectOutputStream objectOutputStream = null; // Stream to write to server
-	
-	private String host_;
-	private int port_;
+
 	/**
 	 * Constructor of TCPClient
 	 * @param host - The remote host (IP/domain name) to which to connect
@@ -34,9 +30,6 @@ public class TCPClient {
 	 * @throws IOException - Thrown on socket issues
 	 */
 	public TCPClient(String host, int port) throws UnknownHostException, IOException {
-		host_ = host;
-		port_ = port;
-		
 		int maxRetries = 3;
 		int waitingTime = 10; //seconds
 		int retryCounter = 0;
@@ -74,7 +67,7 @@ public class TCPClient {
 	 * @return - Returns true on success, else false
 	 */
 	public boolean sendRecord(AbstractRecord record) {
-//		System.out.println("TCPClient: sending record to server");
+		System.out.println("TCPClient: sending record to server");
 		try {
 			this.objectOutputStream.writeObject(record);
 		}catch (SocketException e) {
@@ -86,7 +79,7 @@ public class TCPClient {
 			e.printStackTrace();
 			return false;
 		}
-//		System.out.println("TCPClient: Finished sending to server");
+		System.out.println("TCPClient: Finished sending to server");
 		return true;
 
 	}
@@ -122,9 +115,5 @@ public class TCPClient {
 	 */
 	public void setObjectOutputStream(ObjectOutputStream objectOutputStream) {
 		this.objectOutputStream = objectOutputStream;
-	}
-	
-	public String toString() {
-		return "name " + host_ + " port " + port_;
 	}
 }

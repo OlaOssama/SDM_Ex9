@@ -15,6 +15,7 @@ import javax.print.attribute.standard.Finishings;
 import de.tuda.sdm.dmdb.net.TCPServer;
 import de.tuda.sdm.dmdb.sql.operator.Operator;
 import de.tuda.sdm.dmdb.sql.operator.ReceiveBase;
+import de.tuda.sdm.dmdb.sql.operator.Shuffle;
 import de.tuda.sdm.dmdb.storage.AbstractRecord;
 
 /**
@@ -24,23 +25,8 @@ import de.tuda.sdm.dmdb.storage.AbstractRecord;
  *
  */
 public class Receive extends ReceiveBase {
-	private ExecutorService executor;
-	private Future<AbstractRecord> result;
 	private Thread t1;
-
-	class ReceiveFromLocal implements Callable<AbstractRecord> {
-
-		private Operator child;
-
-		ReceiveFromLocal(Operator child) {
-			this.child = child;
-		}
-
-		@Override
-		public AbstractRecord call() throws Exception {
-			return this.child.next();
-		}
-	}
+	private Thread t2;
 
 	/**
 	 * Constructor of Receive
@@ -78,9 +64,18 @@ public class Receive extends ReceiveBase {
 			t1 = new Thread(receiveServer);
 			t1.start();
 
-			executor = Executors.newSingleThreadExecutor();
 			child.open();
 
+			Runnable task2 = () -> { // receive direkt from local
+				AbstractRecord rec;
+				do {
+					rec = child.next();
+					localCache.add(rec);
+				} while (rec != null);
+			};
+
+			t2 = new Thread(task2);
+			t2.start();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -98,27 +93,14 @@ public class Receive extends ReceiveBase {
 
 		// check if we finished processing of all records - hint: you can use
 		// this.finishedPeers
-
+		
 		AbstractRecord rec = null;
-
-		result = executor.submit(new ReceiveFromLocal(child));
-		try {
-			rec = result.get();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (ExecutionException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		if (rec != null) {
-			return rec;
-		}
-
 		while (localCache.isEmpty()) {
-			if (finishedPeers.get() == numPeers) break;
+			if (finishedPeers.get() == numPeers)
+				break;
 		}
-		if (localCache.isEmpty()) return null;
+		if (localCache.isEmpty())
+			return null;
 		rec = localCache.remove();
 		return rec;
 	}
@@ -127,7 +109,15 @@ public class Receive extends ReceiveBase {
 	public void close() {
 		System.out.println("Receive " + nodeId + " close");
 		// TODO: implement this method
+		
 		receiveServer.stopServer();
+		try {
+			t1.join();
+			t2.join();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		child.close();
 		// reverse what was done in open()
 	}
