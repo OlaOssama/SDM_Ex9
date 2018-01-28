@@ -3,7 +3,14 @@ package de.tuda.sdm.dmdb.sql.operator.exercise;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import javax.print.attribute.standard.Finishings;
 
 import de.tuda.sdm.dmdb.net.TCPServer;
 import de.tuda.sdm.dmdb.sql.operator.Operator;
@@ -17,6 +24,23 @@ import de.tuda.sdm.dmdb.storage.AbstractRecord;
  *
  */
 public class Receive extends ReceiveBase {
+	private ExecutorService executor;
+	private Future<AbstractRecord> result;
+	private Thread t1;
+
+	class ReceiveFromLocal implements Callable<AbstractRecord> {
+
+		private Operator child;
+
+		ReceiveFromLocal(Operator child) {
+			this.child = child;
+		}
+
+		@Override
+		public AbstractRecord call() throws Exception {
+			return this.child.next();
+		}
+	}
 
 	/**
 	 * Constructor of Receive
@@ -51,17 +75,16 @@ public class Receive extends ReceiveBase {
 		try {
 			localCache = new LinkedList<AbstractRecord>();
 			receiveServer = new TCPServer(listenerPort, localCache, finishedPeers);
+			t1 = new Thread(receiveServer);
+			t1.start();
+
+			executor = Executors.newSingleThreadExecutor();
 			child.open();
-			receiveServer.start();
-			// receiveServer.join();
+
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		// catch (InterruptedException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
 	}
 
 	@Override
@@ -76,21 +99,28 @@ public class Receive extends ReceiveBase {
 		// check if we finished processing of all records - hint: you can use
 		// this.finishedPeers
 
-		AbstractRecord rec = child.next();
-		if (rec != null) { // receive from child
-			return rec;
-		} else { // receive from peer
-			if (receiveServer.getActiveConnectionsCount() > 0) {
-				while (localCache.isEmpty()) {
-//					System.out.println("receive " + nodeId + " waiting");
-				}
-				rec = localCache.remove();
-				return rec;
-			}
-			 System.out.println("receive " + nodeId + " no more active connection");
-			// System.out.println("empty localcache size: " + localCache.size());
-			 return null;
+		AbstractRecord rec = null;
+
+		result = executor.submit(new ReceiveFromLocal(child));
+		try {
+			rec = result.get();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ExecutionException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
+		if (rec != null) {
+			return rec;
+		}
+
+		while (localCache.isEmpty()) {
+			if (finishedPeers.get() == numPeers) break;
+		}
+		if (localCache.isEmpty()) return null;
+		rec = localCache.remove();
+		return rec;
 	}
 
 	@Override
