@@ -90,6 +90,7 @@ public class Send extends SendBase {
 				}
 			} else { // reach end
 				closeConnectionsToPeers();
+				System.out.println("send id " + nodeId + " finished!!");
 				return null;	// only send null when complete
 			}
 		} while (true);
@@ -100,7 +101,7 @@ public class Send extends SendBase {
 		// TODO: implement this method
 		// reverse what was done in open() - hint there is a helper method that you can
 		// use
-		System.out.println("send id close ");
+		System.out.println("send id " + nodeId + " close ");
 		child.close();
 	}
 

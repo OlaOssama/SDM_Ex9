@@ -25,8 +25,7 @@ import de.tuda.sdm.dmdb.storage.AbstractRecord;
  *
  */
 public class Receive extends ReceiveBase {
-	private Thread t1;
-	private Thread t2;
+	private Thread t1; // thread adding records returned direct from child
 
 	/**
 	 * Constructor of Receive
@@ -60,26 +59,36 @@ public class Receive extends ReceiveBase {
 
 		try {
 			localCache = new LinkedList<AbstractRecord>();
-			System.out.println("Receive id " + nodeId + " listen: " + listenerPort);
 			receiveServer = new TCPServer(listenerPort, localCache, finishedPeers);
-			t1 = new Thread(receiveServer);
-			t1.start();
+			receiveServer.start();
 
 			child.open();
 
-			Runnable task2 = () -> { // receive direkt from local
+			Runnable task2 = () -> { // receive direct from local
 				AbstractRecord rec;
 				do {
 					rec = child.next();
-					if (rec != null) { // localCache only has elements != null
-						boolean res = localCache.offer(rec);
-						if (!res) System.out.println("Adding to queue NOT ok");
+					if (rec != null) {
+						boolean lock = !(localCache.getClass().getPackage().getName().equals("java.util.concurrent"));
+						boolean res;
+
+						if (lock) {
+							synchronized (localCache) {
+								res = localCache.offer(rec);
+							}
+						} else {
+							res = localCache.offer(rec);
+						}
+
+						if (!res)
+							System.out.println("Adding to queue NOT ok");
 					}
 				} while (rec != null);
 			};
 
-			t2 = new Thread(task2);
-			t2.start();
+			t1 = new Thread(task2);
+			t1.start();
+
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -100,20 +109,24 @@ public class Receive extends ReceiveBase {
 
 		AbstractRecord rec = null;
 		while (localCache.isEmpty() && finishedPeers.get() < numPeers) {
-//			System.out.println(".");
 		}
-		if (localCache.isEmpty())
-			return null;
-		rec = localCache.remove();
+		// if (finishedPeers.get() == numPeers)
+		// try {
+		// Thread.sleep(100);
+		// } catch (InterruptedException e) {
+		// // TODO Auto-generated catch block
+		// e.printStackTrace();
+		// }
+		rec = localCache.poll();
 		return rec;
 	}
 
 	@Override
 	public void close() {
-		receiveServer.stopServer();
 		try {
 			t1.join();
-			t2.join();
+			receiveServer.stopServer();
+			receiveServer.join();
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
