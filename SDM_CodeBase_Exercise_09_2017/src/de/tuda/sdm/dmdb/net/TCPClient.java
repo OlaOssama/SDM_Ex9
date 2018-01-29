@@ -60,13 +60,17 @@ public class TCPClient {
 		this.objectOutputStream = new ObjectOutputStream(this.socket.getOutputStream());
 		System.out.println("TCPClient: created ObjectOutputStream");
 	}
-
+	
+	int countSent = 0;
+	int countReceive = 0;
+	
 	/**
 	 * Sends a record to the a receive server through an object output stream
 	 * @param record - Record to transfer to server
 	 * @return - Returns true on success, else false
 	 */
 	public boolean sendRecord(AbstractRecord record) {
+		++countSent;
 //		System.out.println("TCPClient: sending record to server");
 		try {
 			this.objectOutputStream.writeObject(record);
@@ -79,6 +83,7 @@ public class TCPClient {
 			e.printStackTrace();
 			return false;
 		}
+		++countReceive;
 //		System.out.println("TCPClient: Finished sending to server");
 		return true;
 
@@ -97,6 +102,7 @@ public class TCPClient {
 			e.printStackTrace();
 			return false;
 		}
+		System.out.println("countSent = " + countSent + " countReceive = " + countReceive);
 		return true;
 	}
 

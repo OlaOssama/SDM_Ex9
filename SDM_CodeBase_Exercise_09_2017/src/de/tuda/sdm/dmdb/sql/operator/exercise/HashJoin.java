@@ -18,20 +18,40 @@ public class HashJoin extends HashJoinBase {
 		// TODO: implement this method
 
 		// build hashmap
+		leftChild.open();
+		rightChild.open();
 
+		hashMap = new HashMap<AbstractSQLValue, AbstractRecord>();
+
+		// build hashtable based on right-handside table
+		AbstractRecord rec;
+		do {
+			rec = rightChild.next();
+			if (rec != null) {
+				hashMap.put(rec.getValue(rightAtt), rec);
+			}
+		} while (rec != null);
 	}
 
 	@Override
 	public AbstractRecord next() {
 		// TODO: implement this method
 		// probe HashTable and return next record
-
+		leftRecord = leftChild.next();
+		AbstractRecord rec;
+		if (leftRecord != null) {
+			rec = hashMap.get(leftRecord.getValue(leftAtt));
+			if (rec != null) {
+				return leftRecord.append(rec);
+			}
+		}
 		return null;
 	}
 
 	@Override
 	public void close() {
 		// TODO: implement this method
-
+		leftChild.close();
+		rightChild.close();
 	}
 }

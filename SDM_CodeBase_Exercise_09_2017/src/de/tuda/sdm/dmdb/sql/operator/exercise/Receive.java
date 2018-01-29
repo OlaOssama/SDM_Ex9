@@ -116,7 +116,7 @@ public class Receive extends ReceiveBase {
 		if (finishedPeers.get() == numPeers) { // workaround the case when finishedPeers = numPeers, but receiver does
 												// not yet complete receiving some Records on fly
 			try {
-				Thread.sleep(100);	// hope that after a while some records appear in the localCache
+				Thread.sleep(10);	// hope that after a while some records appear in the localCache
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
