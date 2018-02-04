@@ -122,7 +122,16 @@ public class Receive extends ReceiveBase {
 				e.printStackTrace();
 			}
 		}
-		rec = localCache.poll();
+		
+		boolean lock = !(localCache.getClass().getPackage().getName().equals("java.util.concurrent"));
+		if (lock) {
+			synchronized (localCache) {
+				rec = localCache.poll();
+			}
+		} else {
+			rec = localCache.poll();
+		}
+
 		return rec;
 	}
 
